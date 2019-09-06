@@ -44,16 +44,24 @@ class person:
         all_classes = set(all_classes)
         return all_classes
 
-    def get_all_subjects(self):
-        all_subjects = []
+    def get_parents(self, pupil_name):
+        all_parents = []
         for i in pupils:
-            all_subjects.append(i.subject[i.subject.find('=') + 2 : ])
-        all_subjects = set(all_subjects)
-        return all_subjects
+            if person.get_short_name(i.surname, i.name, i.patronymic) == pupil_name:
+                all_parents.append(i.mother[1:])
+                all_parents.append(i.father[1:])
+        return all_parents
+
+    def get_class_teachers(self, class_num):
+        all_teachers = []
+        for i in pupils:
+            if i.class_[-2:] == class_num:
+                all_teachers.append(i.teacher[1:])
+        return all_teachers
 
     @staticmethod
     def get_short_name(surname, name, patronymic):
-        fio = str(surname).strip('[]') + ' ' + str(name).strip('[]')[:2] + '. ' + str(patronymic).strip('[]')[:2] + '.'
+        fio = str(surname).strip('[]') + ' ' + str(name).strip('[]')[:2] + '.' + str(patronymic).strip('[]')[:2] + '.'
         short_fio = ''.join(str(e) for e in fio).replace('\'', '')
         return short_fio
 
@@ -65,6 +73,36 @@ class pupil(person):
         self.teacher = '\nУчитель = ' + teacher
         self.mother = '\nМама = ' + mother
         self.father = '\nПапа = ' + father
+
+    def get_all_subjects(self, pupil_name):
+        all_subjects = []
+        for i in pupils:
+            if person.get_short_name(i.surname, i.name, i.patronymic) == pupil_name:
+                all_subjects.append(i.subject[i.subject.find('=') + 2 : ])
+        all_subjects = set(all_subjects)
+        return all_subjects
+
+    def get_class_pupils(self, class_num):
+        class_pupils = []
+        for i in pupils:
+            if i.class_[-2:] == class_num:
+                class_pupils.append(person.get_short_name(i.surname, i.name, i.patronymic))
+        return class_pupils
+
+    def get_parents(self, pupil_name):
+        all_parents = []
+        for i in pupils:
+            if person.get_short_name(i.surname, i.name, i.patronymic) == pupil_name:
+                all_parents.append(i.mother[1:])
+                all_parents.append(i.father[1:])
+        return all_parents
+
+    def get_class_teachers(self, class_num):
+        all_teachers = []
+        for i in pupils:
+            if i.class_[-2:] == class_num:
+                all_teachers.append(i.teacher[1:])
+        return all_teachers
 
 class teacher(person):
     def __init__(self, surname, name, patronymic, class_=None, subject=None):
@@ -84,39 +122,48 @@ people = [person(['Поддубный'], ['Алексей'], ['Валерьев�
           person(['Скворцов'], ['Максим'], ['Антонович']),
           person(['Марченко'], ['Анна'], ['Григорьевна'])]
 
+teachers = []
 for itm in people:
-    teachers = [teacher(itm.surname, itm.name, itm.patronymic, random.choice(classes), random.choice(subjects))]
+    teachers.append(teacher(itm.surname, itm.name, itm.patronymic, random.choice(classes), random.choice(subjects)))
 
 people = [person(['Кортнева'],['Мария'], ['Григорьевна']),
           person(['Малиновская'], ['Инна'], ['Александровна']),
           person(['Андреева'], ['Светлана'], ['Геннадьевна'])]
 
+mothers = []
 for itm in people:
-    mothers = [parent(itm.surname, itm.name, itm.patronymic)]
+    mothers.append(parent(itm.surname, itm.name, itm.patronymic))
 
 people = [person(['Кортнев'], ['Олег'], ['Андреевич']),
           person(['Малиновский'], ['Александр'], ['Петрович']),
           person(['Адреев'], ['Илья'], ['Александрович'])]
 
+fathers = []
 for itm in people:
-    fathers = [parent(itm.surname, itm.name, itm.patronymic)]
+    fathers.append(parent(itm.surname, itm.name, itm.patronymic))
 
 people = [person(['Кортнев'], ['Алексей'], ['Олегович']),
           person(['Малиновская'], ['Ольга'], ['Александровна']),
           person(['Адреев'], ['Максим'], ['Ильич'])]
 
+pupils = []
 for itm in people:
-    pupils = [pupil(itm.surname, itm.name, itm.patronymic,\
-                    random.choice(classes), random.choice(subjects),\
-                    person.get_full_name(random.choice(teachers)),\
-                    person.get_full_name(random.choice(mothers)),\
-                    person.get_full_name(random.choice(fathers)))]
-    for itm in pupils:
-        print(person.get_short_name(itm.surname, itm.name, itm.patronymic), itm.class_, itm.subject, itm.teacher, itm.mother, itm.father,'\n')
+    pupils.append(pupil(itm.surname, itm.name, itm.patronymic,\
+                        random.choice(classes), random.choice(subjects),\
+                        person.get_full_name(random.choice(teachers)),\
+                        person.get_full_name(random.choice(mothers)),\
+                        person.get_full_name(random.choice(fathers))))
 
-print('Все классы: {}.'.format(person.get_all_classes(pupils)))
-print('Список учеников.')
+print('\nСписок всех учеников.')
 for itm in pupils:
-        print(person.get_short_name(itm.surname, itm.name, itm.patronymic))
-print('Все предметы: {}.'.format(person.get_all_subjects(pupils)))
+    print(person.get_short_name(itm.surname, itm.name, itm.patronymic), itm.class_, itm.subject, itm.teacher, itm.mother, itm.father,'\n')
+
+print('\n1.  Все классы школы: {}.'.format(classes))
+print('1.1 Все классы с учениками: {}.'.format(person.get_all_classes(pupils)))
+print('2.  Список учеников класса {}: {}.'.format('5Б', pupil.get_class_pupils(pupils, '5Б')))
+print('3.  Все предметы ученика {}: {}.'.format('Адреев М.И.', pupil.get_all_subjects(pupils, 'Адреев М.И.')))
+print('4.  Родители ученика {}: {}.'.format('Адреев М.И.', pupil.get_parents(pupils, 'Адреев М.И.')))
+print('5.  Список учителей класса {}: {}.'.format('5Б', pupil.get_class_teachers(pupils, '5Б')))
+
+
 
